@@ -16,26 +16,28 @@ enum class LogLevel
     FATAL
 };
 
+namespace detail {
 using LevelBaseType = std::underlying_type_t<LogLevel>;
 
 std::atomic<LogLevel> g_log_level{ LogLevel::WARNING };
+} // namespace detail
 
 // Returns previous level
 inline LogLevel set_logging_level(LogLevel level) noexcept
 {
-    return g_log_level.exchange(level);
+    return detail::g_log_level.exchange(level);
 }
 
 inline LogLevel get_logging_level() noexcept
 {
-    return g_log_level.load();
+    return detail::g_log_level.load();
 }
 
 inline bool enabled_for_level(LogLevel level) noexcept
 {
     const auto current_level     = get_logging_level();
-    const auto level_int         = static_cast<LevelBaseType>(level);
-    const auto current_level_int = static_cast<LevelBaseType>(current_level);
+    const auto level_int         = static_cast<detail::LevelBaseType>(level);
+    const auto current_level_int = static_cast<detail::LevelBaseType>(current_level);
 
     return current_level_int <= level_int;
 }
@@ -81,8 +83,8 @@ void log_fatal(std::format_string<Args...> fmt, Args&&... args)
 
 } // namespace logging
 
-#define LOG_DEBUG(fmt, ...)   logging::log_debug(__FILE__, __LINE__, fmt __VA_OPT__(,) __VA_ARGS__)
-#define LOG_INFO(fmt, ...)    logging::log_info(fmt __VA_OPT__(,) __VA_ARGS__)
-#define LOG_WARNING(fmt, ...) logging::log_warning(fmt __VA_OPT__(,) __VA_ARGS__)
-#define LOG_ERROR(fmt, ...)   logging::log_error(fmt __VA_OPT__(,) __VA_ARGS__)
-#define LOG_FATAL(fmt, ...)   logging::log_fatal(fmt __VA_OPT__(,) __VA_ARGS__)
+#define LOG_DEBUG(fmt, ...)   logging::log_debug(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_INFO(fmt, ...)    logging::log_info(fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_WARNING(fmt, ...) logging::log_warning(fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_ERROR(fmt, ...)   logging::log_error(fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_FATAL(fmt, ...)   logging::log_fatal(fmt __VA_OPT__(, ) __VA_ARGS__)
