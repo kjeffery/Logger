@@ -20,21 +20,21 @@ void log()
                  logging::get_logging_verbose_state());
 
     int x = 42;
-    LOG_DEBUG("Test 1");
-    LOG_DEBUG("Test {}", 2);
-    LOG_DEBUG("Test {} with a value of {}", 3, x);
+    logging::log_debug("Test 1");
+    logging::log_debug("Test {}", 2);
+    logging::log_debug("Test {} with a value of {}", 3, x);
 
-    LOG_INFO("Test 4");
-    LOG_INFO("Test {}", 5);
+    logging::log_info("Test 4");
+    logging::log_info("Test {}", 5);
 
-    LOG_WARNING("Test 6");
-    LOG_WARNING("Test {} test", 7);
+    logging::log_warning("Test 6");
+    logging::log_warning("Test {} test", 7);
 
-    LOG_WARNING("Test 8: {}", f());
-    LOG_WARNING("Test 9: {}", f(2, 3));
+    logging::log_warning("Test 8: {}", f());
+    logging::log_warning("Test 9: {}", f(2, 3));
 
-    LOG_ERROR("Test 10");
-    LOG_ERROR("Test {} test", 11);
+    logging::log_error("Test 10");
+    logging::log_error("Test {} test", 11);
 }
 
 int main()
@@ -58,5 +58,5 @@ int main()
     logging::set_logging_level_state(logging::LogLevel::ERROR);
     log();
 
-    LOG_FATAL("Test {}", 42);
+    logging::log_fatal("Test {}", 42);
 }

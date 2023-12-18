@@ -3,6 +3,7 @@
 #include <atomic>
 #include <format>
 #include <iostream>
+#include <source_location>
 #include <syncstream>
 #include <type_traits>
 
@@ -96,82 +97,176 @@ inline bool is_enabled_for_level(LogLevel level) noexcept
 }
 
 template <typename... Args>
-void log_debug(const char* const file_name, int line, std::format_string<Args...> fmt, Args&&... args)
+struct log_debug
 {
-    const auto info = get_logging_state();
-    if (!is_enabled_for_level(LogLevel::DEBUG, info.m_level)) {
-        return;
+    log_debug(std::format_string<Args...> fmt,
+              Args&&... args,
+              std::source_location location = std::source_location::current())
+    {
+        const auto info = get_logging_state();
+        if (!is_enabled_for_level(LogLevel::DEBUG, info.m_level)) {
+            return;
+        }
+        std::osyncstream synced_out{ std::cout };
+        if (location.function_name()) {
+            std::println(synced_out,
+                         "Debug [{}:{} ({})]: {}",
+                         location.file_name(),
+                         location.line(),
+                         location.function_name(),
+                         std::format(fmt, std::forward<Args>(args)...));
+        } else {
+            std::println(synced_out,
+                         "Debug [{}:{}]: {}",
+                         location.file_name(),
+                         location.line(),
+                         std::format(fmt, std::forward<Args>(args)...));
+        }
     }
-    std::osyncstream synced_out{ std::cout };
-    std::println(synced_out, "Debug [{}:{}]: {}", file_name, line, std::format(fmt, std::forward<Args>(args)...));
-}
+};
 
 template <typename... Args>
-void log_info(const char* const file_name, int line, std::format_string<Args...> fmt, Args&&... args)
+struct log_info
 {
-    const auto info = get_logging_state();
-    if (!is_enabled_for_level(LogLevel::INFO, info.m_level)) {
-        return;
+    log_info(std::format_string<Args...> fmt,
+             Args&&... args,
+             std::source_location location = std::source_location::current())
+    {
+        const auto info = get_logging_state();
+        if (!is_enabled_for_level(LogLevel::INFO, info.m_level)) {
+            return;
+        }
+        std::osyncstream synced_out{ std::cout };
+        if (info.m_verbose) {
+            if (location.function_name()) {
+                std::println(synced_out,
+                             "Info: [{}:{} ({})]: {}",
+                             location.file_name(),
+                             location.line(),
+                             location.function_name(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            } else {
+                std::println(synced_out,
+                             "Info: [{}:{}]: {}",
+                             location.file_name(),
+                             location.line(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            }
+        } else {
+            std::println(synced_out, "Info: {}", std::format(fmt, std::forward<Args>(args)...));
+        }
     }
-    std::osyncstream synced_out{ std::cout };
-    if (info.m_verbose) {
-        std::println(synced_out, "Info: [{}:{}]: {}", file_name, line, std::format(fmt, std::forward<Args>(args)...));
-    } else {
-        std::println(synced_out, "Info: {}", std::format(fmt, std::forward<Args>(args)...));
-    }
-}
+};
 
 template <typename... Args>
-void log_warning(const char* const file_name, int line, std::format_string<Args...> fmt, Args&&... args)
+struct log_warning
 {
-    const auto info = get_logging_state();
-    if (!is_enabled_for_level(LogLevel::WARNING, info.m_level)) {
-        return;
+    log_warning(std::format_string<Args...> fmt,
+                Args&&... args,
+                std::source_location location = std::source_location::current())
+    {
+        const auto info = get_logging_state();
+        if (!is_enabled_for_level(LogLevel::WARNING, info.m_level)) {
+            return;
+        }
+        std::osyncstream synced_out{ std::cerr };
+        if (info.m_verbose) {
+            if (location.function_name()) {
+                std::println(synced_out,
+                             "Warning: [{}:{} ({})]: {}",
+                             location.file_name(),
+                             location.line(),
+                             location.function_name(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            } else {
+                std::println(synced_out,
+                             "Warning: [{}:{}]: {}",
+                             location.file_name(),
+                             location.line(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            }
+        } else {
+            std::println(synced_out, "Warning: {}", std::format(fmt, std::forward<Args>(args)...));
+        }
     }
-    std::osyncstream synced_out{ std::cerr };
-    if (info.m_verbose) {
-        std::println(synced_out,
-                     "Warning: [{}:{}]: {}",
-                     file_name,
-                     line,
-                     std::format(fmt, std::forward<Args>(args)...));
-    } else {
-        std::println(synced_out, "Warning: {}", std::format(fmt, std::forward<Args>(args)...));
-    }
-}
+};
 
 template <typename... Args>
-void log_error(const char* const file_name, int line, std::format_string<Args...> fmt, Args&&... args)
+struct log_error
 {
-    const auto info = get_logging_state();
-    if (!is_enabled_for_level(LogLevel::ERROR, info.m_level)) {
-        return;
+    log_error(std::format_string<Args...> fmt,
+              Args&&... args,
+              std::source_location location = std::source_location::current())
+    {
+        const auto info = get_logging_state();
+        if (!is_enabled_for_level(LogLevel::ERROR, info.m_level)) {
+            return;
+        }
+        std::osyncstream synced_out{ std::cerr };
+        if (info.m_verbose) {
+            if (location.function_name()) {
+                std::println(synced_out,
+                             "Error: [{}:{} ({})]: {}",
+                             location.file_name(),
+                             location.line(),
+                             location.function_name(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            } else {
+                std::println(synced_out,
+                             "Error: [{}:{}]: {}",
+                             location.file_name(),
+                             location.line(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            }
+        } else {
+            std::println(synced_out, "Error: {}", std::format(fmt, std::forward<Args>(args)...));
+        }
     }
-    std::osyncstream synced_out{ std::cerr };
-    if (info.m_verbose) {
-        std::println(synced_out, "Error: [{}:{}]: {}", file_name, line, std::format(fmt, std::forward<Args>(args)...));
-    } else {
-        std::println(synced_out, "Error: {}", std::format(fmt, std::forward<Args>(args)...));
-    }
-}
+};
 
 template <typename... Args>
-void log_fatal(const char* const file_name, int line, std::format_string<Args...> fmt, Args&&... args)
+struct log_fatal
 {
-    const auto       info = get_logging_state();
-    std::osyncstream synced_out{ std::cerr };
-    if (info.m_verbose) {
-        std::println(synced_out, "Fatal: [{}:{}]: {}", file_name, line, std::format(fmt, std::forward<Args>(args)...));
-    } else {
-        std::println(synced_out, "Fatal: {}", std::format(fmt, std::forward<Args>(args)...));
+    log_fatal(std::format_string<Args...> fmt,
+              Args&&... args,
+              std::source_location location = std::source_location::current())
+    {
+        const auto       info = get_logging_state();
+        std::osyncstream synced_out{ std::cerr };
+        if (info.m_verbose) {
+            if (location.function_name()) {
+                std::println(synced_out,
+                             "Fatal: [{}:{} ({})]: {}",
+                             location.file_name(),
+                             location.line(),
+                             location.function_name(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            } else {
+                std::println(synced_out,
+                             "Fatal: [{}:{}]: {}",
+                             location.file_name(),
+                             location.line(),
+                             std::format(fmt, std::forward<Args>(args)...));
+            }
+        } else {
+            std::println(synced_out, "Fatal: {}", std::format(fmt, std::forward<Args>(args)...));
+        }
+        std::exit(EXIT_FAILURE);
     }
-    std::exit(EXIT_FAILURE);
-}
+};
 
+template <typename... Args>
+log_debug(std::format_string<Args...> fmt, Args&&... args) -> log_debug<Args...>;
+
+template <typename... Args>
+log_info(std::format_string<Args...> fmt, Args&&... args) -> log_info<Args...>;
+
+template <typename... Args>
+log_warning(std::format_string<Args...> fmt, Args&&... args) -> log_warning<Args...>;
+
+template <typename... Args>
+log_error(std::format_string<Args...> fmt, Args&&... args) -> log_error<Args...>;
+
+template <typename... Args>
+log_fatal(std::format_string<Args...> fmt, Args&&... args) -> log_fatal<Args...>;
 } // namespace logging
-
-#define LOG_DEBUG(fmt, ...)   logging::log_debug(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define LOG_INFO(fmt, ...)    logging::log_info(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define LOG_WARNING(fmt, ...) logging::log_warning(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define LOG_ERROR(fmt, ...)   logging::log_error(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
-#define LOG_FATAL(fmt, ...)   logging::log_fatal(__FILE__, __LINE__, fmt __VA_OPT__(, ) __VA_ARGS__)
