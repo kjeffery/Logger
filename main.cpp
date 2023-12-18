@@ -14,8 +14,8 @@ int f(int x, int y)
 
 void log()
 {
-    std::cout << "=========================\n";
-    std::println(std::cout, "Testing with level: {} and verbosity {}",
+    std::clog << "=========================\n";
+    std::println(std::clog, "Testing with level: {} and verbosity {}",
                  static_cast<int>(logging::get_logging_level_state()),
                  logging::get_logging_verbose_state());
 
