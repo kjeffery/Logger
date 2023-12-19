@@ -9,7 +9,6 @@
 #include <type_traits>
 
 namespace logging {
-
 enum class LogLevel : std::uint8_t
 {
     DEBUG,
@@ -33,7 +32,7 @@ using LevelBaseType = std::underlying_type_t<LogLevel>;
 using AtomicLoggingInformation = std::atomic<LoggingInformation>;
 static_assert(AtomicLoggingInformation::is_always_lock_free, "This isn't strictly necessary, but I want to know");
 
-AtomicLoggingInformation g_logging_information{
+inline AtomicLoggingInformation g_logging_information{
     { LogLevel::WARNING, false }
 };
 
@@ -41,16 +40,16 @@ constexpr std::string_view to_string(LogLevel level) noexcept
 {
     using enum LogLevel;
     switch (level) {
-    case DEBUG:
-        return "Debug";
-    case INFO:
-        return "Info";
-    case WARNING:
-        return "Warning";
-    case ERROR:
-        return "Error";
-    case FATAL:
-        return "Fatal";
+        case DEBUG:
+            return "Debug";
+        case INFO:
+            return "Info";
+        case WARNING:
+            return "Warning";
+        case ERROR:
+            return "Error";
+        case FATAL:
+            return "Fatal";
     }
 
     assert(!"Should not get here");
@@ -123,7 +122,7 @@ void do_log(std::ostream&               outs,
             LogLevel                    level,
             std::source_location        location,
             std::format_string<Args...> fmt,
-            Args&&... args)
+            Args&&...                   args)
 {
     const auto info = get_logging_state();
     if (level != LogLevel::FATAL && !is_enabled_for_level(level, info.m_level)) {
@@ -159,8 +158,8 @@ template <typename... Args>
 struct log_debug
 {
     log_debug(std::format_string<Args...> fmt,
-              Args&&... args,
-              std::source_location location = std::source_location::current())
+              Args&&...                   args,
+              std::source_location        location = std::source_location::current())
     {
         detail::do_log(std::clog, LogLevel::DEBUG, location, fmt, std::forward<Args>(args)...);
     }
@@ -170,8 +169,8 @@ template <typename... Args>
 struct log_info
 {
     log_info(std::format_string<Args...> fmt,
-             Args&&... args,
-             std::source_location location = std::source_location::current())
+             Args&&...                   args,
+             std::source_location        location = std::source_location::current())
     {
         detail::do_log(std::clog, LogLevel::INFO, location, fmt, std::forward<Args>(args)...);
     }
@@ -181,8 +180,8 @@ template <typename... Args>
 struct log_warning
 {
     log_warning(std::format_string<Args...> fmt,
-                Args&&... args,
-                std::source_location location = std::source_location::current())
+                Args&&...                   args,
+                std::source_location        location = std::source_location::current())
     {
         detail::do_log(std::cerr, LogLevel::WARNING, location, fmt, std::forward<Args>(args)...);
     }
@@ -192,8 +191,8 @@ template <typename... Args>
 struct log_error
 {
     log_error(std::format_string<Args...> fmt,
-              Args&&... args,
-              std::source_location location = std::source_location::current())
+              Args&&...                   args,
+              std::source_location        location = std::source_location::current())
     {
         detail::do_log(std::cerr, LogLevel::ERROR, location, fmt, std::forward<Args>(args)...);
     }
@@ -203,8 +202,8 @@ template <typename... Args>
 struct log_fatal
 {
     log_fatal(std::format_string<Args...> fmt,
-              Args&&... args,
-              std::source_location location = std::source_location::current())
+              Args&&...                   args,
+              std::source_location        location = std::source_location::current())
     {
         detail::do_log(std::cerr, LogLevel::FATAL, location, fmt, std::forward<Args>(args)...);
         std::exit(EXIT_FAILURE);
